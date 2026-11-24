@@ -32,14 +32,25 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ProjectSummaryResponse> getUserProject(Long userId) {
-        return List.of();
+
+      var projects= projectRepository.findAllAccessibleByUser(userId);
+        return projectMapper.toListProjectSummaryResponse(projects);
     }
 
-    @Override
-    public ProjectResponse getUserProjectById(Long id, Long userId) {
-        Optional<Project> project=projectRepository.findAccessibleProjectById(id,userId);
-        return projectMapper.toprojectResponse(project);
-    }
+//    @Override
+//    public ProjectResponse getUserProjectById(Long id, Long userId) {
+//        Optional<Project> project=projectRepository.findAccessibleProjectById(id,userId).orElseThrow();
+//        return projectMapper.toProjectResponse(project);
+//    }
+@Override
+public ProjectResponse getUserProjectById(Long id, Long userId) {
+
+    Project project = projectRepository
+            .findAccessibleProjectById(id, userId)
+            .orElseThrow(() -> new RuntimeException("Project not found or access denied"));
+
+    return projectMapper.toProjectResponse(project);
+}
 
     @Override
     public ProjectResponse createProject(ProjectRequest request, Long userId) {
@@ -52,7 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
               .build();
 
 project=projectRepository.save(project);
-return projectMapper.toprojectResponse(Optional.of(project));
+return projectMapper.toProjectResponse(project);
     }
 
     @Override
@@ -60,7 +71,7 @@ return projectMapper.toprojectResponse(Optional.of(project));
         Project project=projectRepository.findAccessibleProjectById(id,userid).orElseThrow(() -> new RuntimeException("Project not found or access denied"));
       project.setName(request.projectName());
       project=projectRepository.save(project);
-      return projectMapper.toprojectResponse(Optional.of(project));
+      return projectMapper.toProjectResponse(project);
     }
 
     @Override
